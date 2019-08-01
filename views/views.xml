@@ -95,7 +95,7 @@
 	                    </page>
 	                    <page string="Sesi">
 							<field name="session_ids">
-								<tree string="Daftar Sesi">
+								<tree string="Daftar Sesi" editable="bottom">
 									<field name="name"/>
 									<field name="instructor_id"/>
 								</tree>
@@ -117,8 +117,8 @@
 	        </form>
 	    </field>
 	</record>
-	
-	
+
+
 	<!-- ### Membuat Action/Event Object Kursus ### -->
 	
 	<record model="ir.actions.act_window" id="kursus_list_action">
@@ -144,13 +144,11 @@
 	
 	<!-- ### Membuat Sub Menu Kursus ### -->
 	
-	<menuitem id="kursus_menu" name="Kursus" parent="training_odoo_menu" action="kursus_list_action"/>
-        
+	<menuitem id="kursus_menu" name="Kursus" parent="training_odoo_menu" action="kursus_list_action"/>	
+	
+	
 
-                  	
-		
-	
-	
+
 	<!-- ### Membuat Tampilan Tree/List Sesi ### -->
 	
 	<record model="ir.ui.view" id="sesi_tree_view">
@@ -163,7 +161,8 @@
 				<field name="start_date"/>
 				<field name="duration"/>
 				<field name="seats"/>
-				<field name="instructor_id"/>      
+				<field name="instructor_id"/>
+				<field name="taken_seats" widget="progressbar"/>     
 	        </tree>
 	    </field>
 	</record>
@@ -187,6 +186,7 @@
 							<field name="start_date"/>
 							<field name="duration"/>
 							<field name="seats"/>
+							<field name="taken_seats" widget="progressbar"/>   
 						</group>
 						<group string="Peserta" colspan="2">
 							<field name="attendee_ids" nolabel="1"/>
