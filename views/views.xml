@@ -117,8 +117,8 @@
 	        </form>
 	    </field>
 	</record>
-
-
+	
+	
 	<!-- ### Membuat Action/Event Object Kursus ### -->
 	
 	<record model="ir.actions.act_window" id="kursus_list_action">
@@ -144,11 +144,13 @@
 	
 	<!-- ### Membuat Sub Menu Kursus ### -->
 	
-	<menuitem id="kursus_menu" name="Kursus" parent="training_odoo_menu" action="kursus_list_action"/>	
+	<menuitem id="kursus_menu" name="Kursus" parent="training_odoo_menu" action="kursus_list_action"/>
+        
+
+                  	
+		
 	
 	
-
-
 	<!-- ### Membuat Tampilan Tree/List Sesi ### -->
 	
 	<record model="ir.ui.view" id="sesi_tree_view">
@@ -186,7 +188,7 @@
 							<field name="start_date"/>
 							<field name="duration"/>
 							<field name="seats"/>
-							<field name="taken_seats" widget="progressbar"/>   
+							<field name="taken_seats" widget="progressbar"/>							
 						</group>
 						<group string="Peserta" colspan="2">
 							<field name="attendee_ids" nolabel="1"/>
@@ -212,6 +214,7 @@
 	
 	<menuitem id="sesi_menu" name="Sesi" parent="training_odoo_menu" action="sesi_list_action"/>
 		
-		    	    
+		
+				    	    
   </data>
 </odoo>
