@@ -18,16 +18,35 @@ from odoo import models, fields, api, exceptions
 class Kursus(models.Model):
     _name = 'training.kursus'
 
-    name = fields.Char(string="Judul", required=True)
-    description = fields.Text()
-    session_ids = fields.One2many('training.sesi', 'course_id', string="Sesi")
-    responsible_id = fields.Many2one('res.users', ondelete='set null', string="Penanggung Jawab", index=True)
+    name = fields.Char(string="Judul", required=True, readonly=True, states={'draft': [('readonly', False)]})
+    description = fields.Text(readonly=True, states={'draft': [('readonly', False)]})
+    session_ids = fields.One2many('training.sesi', 'course_id', string="Sesi", readonly=True, states={'draft': [('readonly', False)]})
+    responsible_id = fields.Many2one('res.users', ondelete='set null', string="Penanggung Jawab", index=True, readonly=True, states={'draft': [('readonly', False)]})
     
     _sql_constraints = [
                     ('name_description_cek', 'CHECK(name != description)', 'Judul kursus dan keterangan tidak boleh sama '),
                     ('name_unik', 'UNIQUE(name)', 'Judul kursus harus unik')
     ]
     
+    
+    state = fields.Selection([
+        ('draft', 'Draft'),
+        ('open', 'Open'),
+        ('done', 'Done'),
+        ], string='Status', copy=False, default='draft')
+     
+  
+    @api.multi
+    def action_confirm(self):
+        self.write({'state': 'open'})
+ 
+    @api.multi
+    def action_cancel(self):
+        self.write({'state': 'draft'})
+ 
+    @api.multi
+    def action_close(self):
+        self.write({'state': 'done'})
     
     @api.multi
     def copy(self, default=None):

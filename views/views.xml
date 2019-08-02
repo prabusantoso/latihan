@@ -71,7 +71,8 @@
 	        <tree string="Kursus List">
 	            <field name="name"/>
 	            <field name="responsible_id"/>
-	            <field name="description"/>       
+	            <field name="description"/>
+				<field name="state"/>       
 	        </tree>
 	    </field>
 	</record>
@@ -84,27 +85,30 @@
 	    <field name="model">training.kursus</field>
 	    <field name="arch" type="xml">
 	        <form string="Kursus Form">
+				<header>
+					<button name="action_confirm" type="object" string="Confirm" states="draft" class="btn-primary"/>
+					<button name="action_cancel" type="object" string="Cancel" states="open"/>
+					<button name="action_close" type="object" string="Close" states="open" class="btn-primary"/>
+					<field name="state" widget="statusbar" statusbar_visible="draft,open,done" readonly="1"/>
+				</header>
 	            <sheet>
 	                <group>
 	                    <field name="name"/>
 	            		<field name="responsible_id"/>
 	                </group>
 	                <notebook>
-	                    <page string="Keterangan">
-	                        <field name="description"/>
-	                    </page>
-	                    <page string="Sesi">
+						<page string="Sesi">
 							<field name="session_ids">
-								<tree string="Daftar Sesi" editable="bottom">
+								<tree sting="Daftar Sesi" editable="bottom">
 									<field name="name"/>
 									<field name="instructor_id"/>
 								</tree>
 								<form>
-									<group string="Informasi">
+									<group string="informasi">
 										<field name="name"/>
 										<field name="instructor_id"/>
 									</group>
-									<group string="Jadwal">
+									<group string="jadwal">
 										<field name="start_date"/>
 										<field name="duration"/>
 										<field name="seats"/>
@@ -112,6 +116,9 @@
 								</form>
 							</field>
 						</page>
+	                    <page string="Keterangan">
+	                        <field name="description"/>
+	                    </page>
 	                </notebook>
 	            </sheet>
 	        </form>
