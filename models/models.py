@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from datetime import timedelta
 from odoo import models, fields, api, exceptions
 
 # class training_odoo(models.Model):
@@ -55,9 +55,61 @@ class Sesi(models.Model):
     instructor_id = fields.Many2one('res.partner', string="Instruktur", domain=['|', ('instructor', '=', True), ('category_id.name', 'ilike', "Pengajar")])
     course_id = fields.Many2one('training.kursus', ondelete='cascade', string="Kursus", required=True)
     attendee_ids = fields.Many2many('res.partner', string="Peserta", domain=[('instructor', '=', False)])
-    
     taken_seats = fields.Float(string="Kursi Terisi", compute='_taken_seats')
-    
+    end_date = fields.Date(string="Tanggal Selesai", store=True, compute='_get_end_date', invese='_set_end_date')
+    attendees_count = fields.Integer(string="Jumlah Peserta", compute='_get_attendees_count', store=True)
+    hours = fields.Float(string="Durasi Jam", compute='_get_hours', inverse='_set_hours')
+    color = fields.Integer('Warna')   
+
+    @api.depends('duration')
+    def _get_hours(self):
+        for r in self:
+            r.hours = r.duration * 24
+     
+    def _set_hours(self):
+        for r in self:
+            r.duration = r.hours / 24
+
+
+    @api.depends('attendee_ids')
+    def _get_attendees_count(self):
+        for r in self:
+            # Mengupdate field attendees_count berdasarkan jumlah record di tabel peserta 
+            r.attendees_count = len(r.attendee_ids)
+
+    @api.depends('start_date', 'duration')
+    def _get_end_date(self):
+        for r in self:
+            # Pengecekan jika field duration & start_date tidak diisi, maka field end_date akan di update sama seperti field start_date
+            if not (r.start_date and r.duration): 
+                r.end_date = r.start_date
+                continue
+     
+            # Membuat variable start yang isinya tanggal dari field start_date 
+            start = fields.Datetime.from_string(r.start_date)
+             
+            # Membuat variable duration yang isinya durasi hari dari field duration
+            # Durasi hari dikurangi 1 detik agar start_date masuk kedalam durasi hari
+            duration = timedelta(days=r.duration, seconds=-1)
+             
+            # Mengupdate field end_date dari perhitungan variabel start ditambah variabel duration 
+            r.end_date = start + duration
+     
+    def _set_end_date(self):
+        for r in self:
+            if not (r.start_date and r.end_date):
+                continue
+         
+            # Membuat variable start_date yang isinya tanggal dari field start_date
+            start_date = fields.Datetime.from_string(r.start_date)
+             
+            # Membuat variable end_date yang isinya tanggal dari field end_date
+            end_date = fields.Datetime.from_string(r.end_date)
+             
+            # Mengupdate field duration (jika ada perubahan dari field end_date) dari perhitungan variabel end_date dikurangi variabel start_date (ditambah 1 hari agar end_date termasuk durasi hari) 
+            r.duration = (end_date - start_date).days + 1
+
+
     @api.depends('seats', 'attendee_ids')
     def _taken_seats(self):
         for r in self:

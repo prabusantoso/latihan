@@ -117,19 +117,65 @@
 	        </form>
 	    </field>
 	</record>
-	
-	
-	<!-- ### Membuat Action/Event Object Kursus ### -->
-	
-	<record model="ir.actions.act_window" id="kursus_list_action">
-	    <field name="name">Kursus</field>
-	    <field name="res_model">training.kursus</field>
-	    <field name="view_type">form</field>
-	    <field name="view_mode">tree,form</field>
-	    <field name="help" type="html">
-	        <p class="oe_view_nocontent_create">Buatlah kursus pertamamu ...</p>
-	    </field>
+
+
+	<!-- Membuat Tampilan Calendar Sesi  -->
+	<record model="ir.ui.view" id="sesi_calendar_view">
+    	<field name="name">training.sesi.calendar</field>
+    	<field name="model">training.sesi</field>
+    	<field name="arch" type="xml">
+			<calendar string="Sesi Calendar" date_start="start_date" date_stop="end_date" color="instructor_id" mode="month">
+            	<field name="name"/>
+        	</calendar>
+      	</field>
+    </record> 
+
+	<!-- ### Membuat Search View Kursus ### -->
+     
+	<record model="ir.ui.view" id="kursus_search_view">
+		<field name="name">training.kursus.search</field>
+		<field name="model">training.kursus</field>
+		<field name="arch" type="xml">
+			<search>
+				<field name="name"/>
+				<field name="responsible_id"/>
+				<field name="description"/>
+				<filter name="my_courses" string="Kursus Saya" domain="[('responsible_id', '=', uid)]"/>
+				<group string="Group By">
+					<filter name="by_responsible" string="Penanggung Jawab" context="{'group_by': 'responsible_id'}"/>
+				</group>              
+			</search>
+		</field>
 	</record>
+    
+
+	<!-- ### Membuat Tampilan Graph Sesi ### -->
+	
+	<record model="ir.ui.view" id="sesi_graph_view">
+		<field name="name">training.sesi.graph</field>
+		<field name="model">training.sesi</field>
+		<field name="arch" type="xml">
+			<graph string="Peserta by Kursus" type="pie">
+				<field name="course_id"/>
+				<field name="attendees_count" type="measure"/>
+			</graph>
+		</field>
+	</record>
+
+
+	<!-- ### Membuat Tampilan Pivot Sesi ### -->
+	
+	<record model="ir.ui.view" id="sesi_pivot_view">
+		<field name="name">training.sesi.pivot</field>
+		<field name="model">training.sesi</field>
+		<field name="arch" type="xml">
+			<pivot string="Peserta by Kursus" disable_linking="True" display_quantity="true">
+				<field name="course_id"/>
+				<field name="attendees_count" type="measure"/>
+			</pivot>
+		</field>
+	</record>
+
 	
 	
 	<!-- ### Membuat Menu Bar ### -->
@@ -145,11 +191,7 @@
 	<!-- ### Membuat Sub Menu Kursus ### -->
 	
 	<menuitem id="kursus_menu" name="Kursus" parent="training_odoo_menu" action="kursus_list_action"/>
-        
-
-                  	
-		
-	
+    
 	
 	<!-- ### Membuat Tampilan Tree/List Sesi ### -->
 	
@@ -157,18 +199,63 @@
 	    <field name="name">training.sesi.tree</field>
 	    <field name="model">training.sesi</field>
 	    <field name="arch" type="xml">
-	        <tree string="Sesi List">
+	        <tree string="Sesi List" decoration-info="duration&lt;5" decoration-danger="duration&gt;15">
 				<field name="name"/>
 				<field name="course_id"/>
 				<field name="start_date"/>
+				<field name="end_date"/>
 				<field name="duration"/>
+				<field name="hours"/>
 				<field name="seats"/>
 				<field name="instructor_id"/>
+				<field name="color"/>
 				<field name="taken_seats" widget="progressbar"/>     
 	        </tree>
 	    </field>
 	</record>
 	
+
+	<!-- ### Membuat Tampilan Kanban Sesi ### -->
+	
+	<record model="ir.ui.view" id="sesi_kanban_view">
+		<field name="name">training.sesi.kanban</field>
+		<field name="model">training.sesi</field>
+		<field name="arch" type="xml">
+			<kanban default_group_by="course_id">
+				<field name="color"/>
+				<templates>
+					<t t-name="kanban-box">
+						<div t-attf-class="oe_kanban_color_{{kanban_getcolor(record.color.raw_value)}} oe_kanban_global_click_edit oe_semantic_html_override oe_kanban_card {{record.group_fancy==1 ? 'oe_kanban_card_fancy' : ''}}">
+							
+							<div class="o_dropdown_kanban dropdown">
+								<!-- MENU DROPDOWN -->
+								<a class="dropdown-toggle btn" data-toggle="dropdown" href="#" >
+									<span class="fa fa-bars fa-lg"/>
+								</a>
+								<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+									<li>
+										<a type="delete">Hapus</a>
+									</li>
+									<li>
+										<ul class="oe_kanban_colorpicker" data-field="color"/>
+									</li>
+								</ul> 
+							</div>
+							
+							<div t-attf-class="oe_kanban_content" >
+								<!-- JUDUL -->
+								Nama Sesi : <b><i><field name="name"/></i></b><br/> 
+								Tanggal Mulai : <field name="start_date"/><br/>
+								Durasi : <field name="duration"/>
+							</div>
+							
+						</div>
+					</t>
+				</templates>
+			</kanban>
+		</field>
+	</record>
+
 	
 	<!-- ### Membuat Tampilan Form Sesi ### -->
 		
@@ -182,6 +269,7 @@
 						<group string="Informasi">
 							<field name="course_id"/>
 							<field name="name"/>
+							<field name="end_date"/>
 							<field name="instructor_id"/>
 						</group>
 						<group string="Jadwal">
@@ -199,6 +287,18 @@
 		</field>
 	</record>
 	
+	<!-- ### Membuat Action/Event Object Kursus ### -->
+	
+	<record model="ir.actions.act_window" id="kursus_list_action">
+	    <field name="name">Kursus</field>
+	    <field name="res_model">training.kursus</field>
+	    <field name="view_type">form</field>
+	    <field name="view_mode">tree,form</field>
+	    <field name="help" type="html">
+	        <p class="oe_view_nocontent_create">Buatlah kursus pertamamu ...</p>
+	    </field>
+	</record>
+	
 	
 	<!-- ### Membuat Action/Event Object Sesi ### -->
 	
@@ -206,7 +306,7 @@
 		<field name="name">Sesi</field>
 		<field name="res_model">training.sesi</field>
 		<field name="view_type">form</field>
-		<field name="view_mode">tree,form</field>
+		<field name="view_mode">tree,form,calendar,gantt,graph,pivot,kanban</field>
 	</record>
 	
 	
